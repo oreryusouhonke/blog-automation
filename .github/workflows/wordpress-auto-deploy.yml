@@ -27,8 +27,60 @@ jobs:
           npm install axios front-matter
 
       - name: Deploy to WordPress
-        run: node deploy.js
         env:
           WORDPRESS_URL: ${{ secrets.WORDPRESS_URL }}
           WORDPRESS_USERNAME: ${{ secrets.WORDPRESS_USERNAME }}
           WORDPRESS_PASSWORD: ${{ secrets.WORDPRESS_PASSWORD }}
+        run: |
+          cat > deploy.js << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          const axios = require('axios');
+          const fm = require('front-matter');
+
+          async function deployToWordPress() {
+            const postsDir = './posts';
+            const files = fs.readdirSync(postsDir).filter(file => file.endsWith('.md'));
+
+            for (const file of files) {
+              const filePath = path.join(postsDir, file);
+              const content = fs.readFileSync(filePath, 'utf8');
+              const parsed = fm(content);
+
+              const postData = {
+                title: parsed.attributes.title,
+                content: parsed.body,
+                status: parsed.attributes.status || 'draft',
+                excerpt: parsed.attributes.excerpt || '',
+                date: parsed.attributes.date || new Date().toISOString()
+              };
+
+              try {
+                const response = await axios.post(
+                  `${process.env.WORDPRESS_URL}/wp-json/wp/v2/posts`,
+                  postData,
+                  {
+                    auth: {
+                      username: process.env.WORDPRESS_USERNAME,
+                      password: process.env.WORDPRESS_PASSWORD
+                    },
+                    headers: {
+                      'Content-Type': 'application/json; charset=utf-8'
+                    }
+                  }
+                );
+
+                console.log(`成功: ${postData.title}`);
+                console.log(`URL: ${response.data.link}`);
+              } catch (error) {
+                console.error(`エラー: ${postData.title}`);
+                console.error(error.response?.data || error.message);
+                process.exit(1);
+              }
+            }
+          }
+
+          deployToWordPress();
+          EOF
+
+          node deploy.js
