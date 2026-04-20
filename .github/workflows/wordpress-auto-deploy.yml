@@ -18,11 +18,13 @@ jobs:
 
       - name: Set UTF-8
         run: |
-          echo "LANG=ja_JP.UTF-8" >> $GITHUB_ENV
-          echo "LC_ALL=ja_JP.UTF-8" >> $GITHUB_ENV
+          echo "LANG=C.UTF-8" >> $GITHUB_ENV
+          echo "LC_ALL=C.UTF-8" >> $GITHUB_ENV
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm init -y
+          npm install axios front-matter
 
       - name: Deploy to WordPress
         run: node deploy.js
