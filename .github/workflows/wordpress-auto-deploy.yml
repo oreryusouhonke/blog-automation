@@ -16,7 +16,6 @@ jobs:
         with:
           node-version: '18'
 
-      # 🔥 UTF-8設定（これ重要）
       - name: Set UTF-8
         run: |
           echo "LANG=ja_JP.UTF-8" >> $GITHUB_ENV
@@ -26,8 +25,7 @@ jobs:
         run: npm install
 
       - name: Deploy to WordPress
-        run: |
-          node deploy.js
+        run: node deploy.js
         env:
           WORDPRESS_URL: ${{ secrets.WORDPRESS_URL }}
           WORDPRESS_USERNAME: ${{ secrets.WORDPRESS_USERNAME }}
