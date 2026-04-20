@@ -1,4 +1,3 @@
-.github/workflows/deploy-to-wordpress.yml
 name: Deploy to WordPress
 
 on:
